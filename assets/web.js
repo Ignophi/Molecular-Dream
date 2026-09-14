@@ -3,12 +3,91 @@ document.addEventListener('DOMContentLoaded', () => {
   const placeholder = document.querySelector('.web-toc-placeholder');
 
   if (paper) {
+    // The source deliberately has a numbered `\section{References}`, while
+    // LaTeXML also emits an internal bibliography title. Keep the numbered
+    // section and suppress the redundant internal heading in both the paper
+    // and the navigation.
+    const explicitReferenceHeading = [...paper.querySelectorAll('section.ltx_section > .ltx_title')]
+      .find(h => h.textContent.replace(/\s+/g, ' ').trim().replace(/^\d+(?:\.\d+)*\.?\s*/, '').toLowerCase() === 'references');
+    const bibliography = paper.querySelector('.ltx_bibliography');
+    const bibliographyTitle = bibliography?.querySelector(':scope > .ltx_title');
+    if (explicitReferenceHeading && bibliographyTitle) {
+      bibliographyTitle.classList.add('web-bib-internal-title');
+      bibliographyTitle.setAttribute('aria-hidden', 'true');
+    }
+
+    // Rebuild each bibliography entry into two semantic layers:
+    //   [n]  normal bibliographic citation in one flowing paragraph
+    //        [a] compact annotated quote
+    //        [b] compact annotated quote
+    // The source .bbl uses \newblock, which LaTeXML renders as separate
+    // blocks; that is useful for parsing but visually too fragmented here.
+    if (bibliography) {
+      const items = [...bibliography.querySelectorAll('.ltx_bibitem')];
+      items.forEach((item, index) => {
+        if (item.classList.contains('web-bibitem')) return;
+        item.classList.add('web-bibitem');
+
+        let tag = item.querySelector(':scope > .ltx_tag_bibitem, :scope > .ltx_tag');
+        if (!tag) {
+          tag = document.createElement('span');
+          item.insertBefore(tag, item.firstChild);
+        }
+        tag.classList.add('web-ref-number');
+        tag.textContent = `[${index + 1}]`;
+
+        const directBlocks = [...item.children].filter(el => el.classList.contains('ltx_bibblock'));
+        const annotations = [...item.querySelectorAll('.web-ref-annotation')];
+
+        if (directBlocks.length) {
+          const main = document.createElement('div');
+          main.className = 'web-ref-main';
+          let visiblePart = 0;
+
+          directBlocks.forEach(block => {
+            const clone = block.cloneNode(true);
+            clone.querySelectorAll('.web-ref-annotation').forEach(note => note.remove());
+
+            // Ignore the punctuation left behind by an annotation-only \newblock.
+            const usefulText = clone.textContent.replace(/[\s.,;:]+/g, '');
+            if (!usefulText) return;
+
+            visiblePart += 1;
+            const part = document.createElement('span');
+            part.className = 'web-ref-part';
+            if (visiblePart === 1) part.classList.add('web-ref-authors');
+            else if (visiblePart === 2) part.classList.add('web-ref-title');
+            else part.classList.add('web-ref-details');
+
+            while (clone.firstChild) part.appendChild(clone.firstChild);
+            main.appendChild(part);
+            main.appendChild(document.createTextNode(' '));
+          });
+
+          const notes = document.createElement('div');
+          notes.className = 'web-ref-notes';
+
+          annotations.forEach(note => {
+            const label = note.querySelector('.ltx_font_bold, strong, b');
+            const quote = note.querySelector('.ltx_font_italic, em, i');
+            if (label) label.classList.add('web-ref-annotation-label');
+            if (quote) quote.classList.add('web-ref-annotation-text');
+            notes.appendChild(note);
+          });
+
+          directBlocks.forEach(block => block.remove());
+          item.appendChild(main);
+          if (annotations.length) item.appendChild(notes);
+        }
+      });
+    }
+
     const headings = [...paper.querySelectorAll(
       'section.ltx_section > .ltx_title, ' +
       'section.ltx_subsection > .ltx_title, ' +
       'section.ltx_subsubsection > .ltx_title, ' +
       '.ltx_bibliography > .ltx_title'
-    )];
+    )].filter(heading => !heading.classList.contains('web-bib-internal-title'));
 
     if (headings.length) {
       // Hide the print-era/in-flow Contents marker. It remains in the source only

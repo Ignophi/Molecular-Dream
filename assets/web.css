@@ -328,3 +328,159 @@ section[id], .ltx_bibliography[id] {
   .ltx_note_content { width: min(28rem, 88vw) !important; max-width: 88vw !important; }
   .web-toc-toggle { top: .55rem; left: .55rem; }
 }
+
+/* ------------------------------
+   Bibliography / annotated refs
+   ------------------------------ */
+
+/* main.tex intentionally creates the numbered section "6. References".
+   LaTeXML also emits its own bibliography heading; keep only the numbered one. */
+.ltx_bibliography > .ltx_title.web-bib-internal-title,
+.web-bib-internal-title {
+  display: none !important;
+}
+
+/* Undo the print-like author/year label column produced from natbib's optional
+   bibitem label. web.js replaces it with the PDF-style numeric [1], [2], ... */
+.ltx_bibliography .ltx_biblist {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ltx_bibliography .ltx_bibitem.web-bibitem {
+  display: grid !important;
+  grid-template-columns: 2.65rem minmax(0, 1fr) !important;
+  column-gap: .75rem !important;
+  row-gap: .35rem !important;
+  position: relative !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 1rem 0 1.05rem !important;
+  border-top: 1px solid #e8e8e8 !important;
+  list-style: none !important;
+  text-align: left !important;
+}
+
+.ltx_bibliography .ltx_bibitem.web-bibitem:first-child {
+  border-top: 0 !important;
+  padding-top: .35rem !important;
+}
+
+.ltx_bibliography .web-ref-number {
+  grid-column: 1 !important;
+  grid-row: 1 / span 2 !important;
+  position: static !important;
+  float: none !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: .08rem 0 0 !important;
+  padding: 0 !important;
+  color: var(--web-accent) !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: .82rem !important;
+  font-weight: 720 !important;
+  line-height: 1.4 !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+}
+
+/* One flowing citation instead of LaTeXML's one-line-per-\newblock layout. */
+.ltx_bibliography .web-ref-main {
+  grid-column: 2 !important;
+  min-width: 0 !important;
+  color: #242424 !important;
+  font-size: .96rem !important;
+  line-height: 1.47 !important;
+  overflow-wrap: anywhere;
+}
+
+.ltx_bibliography .web-ref-part {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ltx_bibliography .web-ref-authors {
+  font-weight: 470 !important;
+}
+
+.ltx_bibliography .web-ref-title {
+  color: #171717 !important;
+  font-weight: 700 !important;
+}
+
+.ltx_bibliography .web-ref-details {
+  color: #404040 !important;
+  font-weight: 400 !important;
+}
+
+/* qitems are supporting evidence, not part of the bibliographic citation.
+   Make them a compact, clearly subordinate list. */
+.ltx_bibliography .web-ref-notes {
+  grid-column: 2 !important;
+  display: grid !important;
+  gap: .28rem !important;
+  margin: .18rem 0 0 !important;
+  padding: 0 !important;
+}
+
+.ltx_bibliography .web-ref-annotation {
+  display: grid !important;
+  grid-template-columns: 2rem minmax(0, 1fr) !important;
+  column-gap: .45rem !important;
+  align-items: start !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: .18rem .35rem .18rem .55rem !important;
+  border: 0 !important;
+  border-left: 2px solid #dedede !important;
+  background: transparent !important;
+  color: #666 !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: .76rem !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  line-height: 1.45 !important;
+  text-align: left !important;
+}
+
+.ltx_bibliography .web-ref-annotation-label {
+  grid-column: 1 !important;
+  color: #444 !important;
+  font-size: .73rem !important;
+  font-weight: 750 !important;
+  font-style: normal !important;
+  line-height: 1.45 !important;
+}
+
+.ltx_bibliography .web-ref-annotation-text {
+  grid-column: 2 !important;
+  color: #666 !important;
+  font-size: inherit !important;
+  font-weight: 400 !important;
+  font-style: italic !important;
+  line-height: inherit !important;
+}
+
+/* Safety net if a bibliography item escaped the DOM cleanup. */
+.ltx_bibliography .web-bibitem > .ltx_bibblock {
+  display: inline !important;
+}
+
+@media (max-width: 700px) {
+  .ltx_bibliography .ltx_bibitem.web-bibitem {
+    grid-template-columns: 2.1rem minmax(0, 1fr) !important;
+    column-gap: .55rem !important;
+  }
+
+  .ltx_bibliography .web-ref-main {
+    font-size: .92rem !important;
+  }
+
+  .ltx_bibliography .web-ref-annotation {
+    grid-template-columns: 1.7rem minmax(0, 1fr) !important;
+    padding-left: .4rem !important;
+    font-size: .74rem !important;
+  }
+}
