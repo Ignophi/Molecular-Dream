@@ -21,6 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Prepare web-friendly LaTeX
+        run: |
+          python3 scripts/prepare-web.py main.tex web.tex
+          cp -f main.bbl web.bbl
+
       - name: Build ar5iv-style HTML
         run: |
           mkdir -p _site
@@ -29,16 +34,15 @@ jobs:
             -w /docdir \
             --user "$(id -u):$(id -g)" \
             latexml/ar5ivist:2512.17 \
-            --source=main.tex \
+            --source=web.tex \
             --destination=_site/index.html
 
-      # Keep the original raster figures available at the same relative paths
-      # used by the LaTeX source. This is harmless if LaTeXML has already
-      # copied them and makes deployment robust across converter versions.
-      - name: Copy static assets
+      - name: Add web fixes and static assets
         run: |
           mkdir -p _site/figures
           cp -f figures/* _site/figures/
+          cp -f assets/web.css assets/web.js _site/
+          python3 scripts/inject-web-assets.py _site/index.html
           touch _site/.nojekyll
 
       - name: Configure Pages
