@@ -1,0 +1,130 @@
+/* Molecular Dream: web-only corrections layered on top of ar5iv CSS. */
+
+/* The PDF is deliberately two-column. The web article should be continuous flow. */
+.ltx_page_columns,
+.ltx_page_column,
+.ltx_columns,
+.ltx_column,
+.ltx_page_content {
+  column-count: 1 !important;
+  columns: auto !important;
+  float: none !important;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* Objective / Results box: same idea as the PDF, without page-sized geometry. */
+.web-abstract {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 1.4rem 0 1.8rem !important;
+  padding: 1rem 1.15rem !important;
+  border: 1px solid #888 !important;
+  border-radius: 3px !important;
+  background: #f7f7f7 !important;
+  text-align: left !important;
+}
+.web-abstract > :first-child { margin-top: 0 !important; }
+.web-abstract > :last-child { margin-bottom: 0 !important; }
+
+/* Clickable table of contents built by web.js. */
+.web-toc-placeholder {
+  display: block;
+  margin: 1.8rem 0 .65rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.web-toc {
+  margin: 0 0 2rem;
+  padding: .35rem 0 .55rem;
+  border-bottom: 1px solid #ddd;
+}
+.web-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 2rem;
+}
+.web-toc li {
+  break-inside: avoid;
+  margin: .16rem 0;
+  line-height: 1.35;
+}
+.web-toc li.depth-2 { padding-left: 1.25rem; font-size: .94em; }
+.web-toc li.depth-3 { padding-left: 2.5rem; font-size: .90em; }
+.web-toc a { text-decoration: none; }
+.web-toc a:hover { text-decoration: underline; }
+
+/* Footnotes: never let note bodies participate in article layout. This removes the
+   overlapping side-column notes and the giant blank areas they can create. */
+.ltx_note {
+  position: relative !important;
+  display: inline !important;
+  float: none !important;
+}
+.ltx_note_outer { display: inline !important; }
+.ltx_note_content {
+  display: none !important;
+  position: absolute !important;
+  z-index: 1000 !important;
+  left: 0 !important;
+  top: 1.35em !important;
+  box-sizing: border-box !important;
+  width: min(34rem, 80vw) !important;
+  max-width: min(34rem, 80vw) !important;
+  max-height: 55vh !important;
+  overflow: auto !important;
+  margin: 0 !important;
+  padding: .75rem .9rem !important;
+  background: #fff !important;
+  border: 1px solid #aaa !important;
+  border-radius: 4px !important;
+  box-shadow: 0 6px 22px rgba(0,0,0,.16) !important;
+  font-size: .9rem !important;
+  line-height: 1.4 !important;
+  text-align: left !important;
+}
+.ltx_note:hover .ltx_note_content,
+.ltx_note:focus-within .ltx_note_content,
+.ltx_note.is-open .ltx_note_content {
+  display: block !important;
+}
+.ltx_note_mark { cursor: pointer; }
+
+/* Annotated bibliography: retain your [a], [b], ... source quotations, but make them
+   subordinate blocks under the normal bibliographic entry instead of tiny TeX boxes. */
+.web-ref-annotation {
+  display: block !important;
+  box-sizing: border-box;
+  margin: .45rem 0 .55rem 1.1rem !important;
+  padding: .1rem 0 .1rem .85rem !important;
+  border-left: 2px solid #d2d2d2;
+  color: #555 !important;
+  font-size: .92em !important;
+  line-height: 1.45 !important;
+  text-align: left !important;
+}
+.web-ref-annotation .ltx_font_bold,
+.web-ref-annotation strong { color: #222 !important; }
+
+/* Avoid PDF pagination remnants from creating visible vertical holes. */
+.ltx_pagination,
+.ltx_role_newpage {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 760px) {
+  .web-toc ol { columns: 1; }
+  .web-abstract { padding: .85rem .9rem !important; }
+  .ltx_note_content { width: min(28rem, 88vw) !important; max-width: 88vw !important; }
+}
