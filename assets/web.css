@@ -50,19 +50,23 @@
   display: none !important;
 }
 
-/* The paper and its TOC become a two-column web layout on wide screens. */
+/* On wide screens the paper sits in the true centre column, flanked by
+   equal-width navigation and notes rails. This keeps the manuscript visually
+   centred instead of being pushed to the right by the Contents sidebar. */
 .web-layout {
   display: grid;
-  grid-template-columns: 16.5rem minmax(0, 1fr);
-  gap: clamp(2rem, 4vw, 4.5rem);
+  grid-template-columns: clamp(12rem, 15vw, 16.5rem) minmax(0, 70rem) clamp(12rem, 15vw, 16.5rem);
+  justify-content: center;
+  gap: clamp(1.25rem, 2.2vw, 2.75rem);
   align-items: start;
-  width: min(96rem, 100%);
+  width: min(112rem, 100%);
   margin: 0 auto;
   padding: 0 1.25rem;
   box-sizing: border-box;
 }
 
 .web-layout > .ltx_document {
+  grid-column: 2;
   min-width: 0;
   width: 100% !important;
   max-width: 70rem !important;
@@ -188,6 +192,90 @@ section[id], .ltx_bibliography[id] {
   cursor: pointer;
 }
 
+
+/* ------------------------------
+   Desktop footnote margin rail
+   ------------------------------ */
+.web-margin-rail {
+  grid-column: 3;
+  position: sticky;
+  top: 1.1rem;
+  align-self: start;
+  box-sizing: border-box;
+  min-width: 0;
+  max-height: calc(100vh - 2.2rem);
+  overflow: auto;
+  padding: .35rem .15rem 1.25rem 1.15rem;
+  border-left: 1px solid var(--web-rule);
+  color: var(--web-muted);
+  scrollbar-width: thin;
+  scrollbar-color: #c7c9cc transparent;
+}
+
+.web-margin-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 0 .65rem;
+  padding: .35rem 0 .7rem;
+  background: #fff;
+  border-bottom: 1px solid var(--web-rule);
+  color: var(--web-ink);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: .77rem;
+  font-weight: 760;
+  letter-spacing: .09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.web-margin-note {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: .79rem;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+}
+
+.web-margin-note.is-empty {
+  color: #8a8d92;
+  font-size: .76rem;
+  line-height: 1.45;
+}
+
+.web-margin-note-label {
+  display: inline-block;
+  margin: 0 0 .45rem;
+  padding: .12rem .4rem;
+  border-radius: 999px;
+  background: #f8f1f1;
+  color: var(--web-accent);
+  font-size: .72rem;
+  font-weight: 760;
+}
+
+.web-margin-note-content {
+  color: #55595f;
+}
+.web-margin-note-content > :first-child { margin-top: 0 !important; }
+.web-margin-note-content > :last-child { margin-bottom: 0 !important; }
+
+/* On desktop the original LaTeXML popup is suppressed. Hover/focus/click on
+   a footnote number sends the note into the stable right margin instead. */
+@media (min-width: 1181px) {
+  body.web-has-margin-notes .ltx_note .ltx_note_content,
+  body.web-has-margin-notes .ltx_note:hover .ltx_note_content,
+  body.web-has-margin-notes .ltx_note:focus-within .ltx_note_content,
+  body.web-has-margin-notes .ltx_note.is-open .ltx_note_content {
+    display: none !important;
+  }
+
+  body.web-has-margin-notes .ltx_note_mark:hover,
+  body.web-has-margin-notes .ltx_note_mark:focus {
+    color: var(--web-accent) !important;
+    outline: none;
+  }
+}
+
 /* Footnotes: never let note bodies participate in article layout. */
 .ltx_note {
   position: relative !important;
@@ -260,6 +348,10 @@ section[id], .ltx_bibliography[id] {
     max-width: 70rem !important;
     margin-left: auto !important;
     margin-right: auto !important;
+  }
+
+  .web-margin-rail {
+    display: none !important;
   }
 
   .web-toc-sidebar {

@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   const paper = document.querySelector('article.ltx_document, .ltx_document');
   const placeholder = document.querySelector('.web-toc-placeholder');
+  let marginNotePanel = null;
+  let marginNoteLabel = null;
 
   if (paper) {
     // The source deliberately has a numbered `\section{References}`, while
@@ -194,10 +196,28 @@ document.addEventListener('DOMContentLoaded', () => {
       nav.appendChild(list);
 
       // Put the navigation beside the article without rewriting the article itself.
+      // The third, equal-width rail keeps the manuscript truly centred and is
+      // used for stable desktop footnotes instead of floating popovers.
+      const marginRail = document.createElement('aside');
+      marginRail.className = 'web-margin-rail';
+      marginRail.setAttribute('aria-label', 'Footnotes');
+
+      const marginHeader = document.createElement('div');
+      marginHeader.className = 'web-margin-header';
+      marginHeader.textContent = 'Footnotes';
+
+      marginNotePanel = document.createElement('div');
+      marginNotePanel.className = 'web-margin-note is-empty';
+      marginNotePanel.setAttribute('aria-live', 'polite');
+      marginNotePanel.textContent = 'Hover or click a footnote number to read the note here.';
+
+      marginRail.append(marginHeader, marginNotePanel);
+
       const shell = document.createElement('div');
       shell.className = 'web-layout';
       paper.parentNode.insertBefore(shell, paper);
-      shell.append(nav, paper);
+      shell.append(nav, paper, marginRail);
+      document.body.classList.add('web-has-margin-notes');
 
       // On narrower screens the same TOC becomes an off-canvas drawer.
       const toggle = document.createElement('button');
@@ -283,20 +303,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Make footnote popovers usable by click/tap as well as hover.
+  // Footnotes: on wide desktop screens the note is rendered in the stable
+  // right-hand margin rail. On tablet/mobile we keep the compact popup fallback.
+  const renderMarginNote = (note) => {
+    if (!marginNotePanel) return;
+    const mark = note.querySelector('.ltx_note_mark');
+    const source = note.querySelector('.ltx_note_content');
+    if (!source) return;
+
+    marginNotePanel.replaceChildren();
+    marginNotePanel.classList.remove('is-empty');
+
+    const label = document.createElement('div');
+    label.className = 'web-margin-note-label';
+    const markText = mark ? mark.textContent.replace(/\s+/g, ' ').trim() : '';
+    label.textContent = markText ? `Footnote ${markText}` : 'Footnote';
+
+    const content = document.createElement('div');
+    content.className = 'web-margin-note-content';
+    const clone = source.cloneNode(true);
+    clone.querySelectorAll('.ltx_note_mark, .ltx_tag_note, [id]').forEach(el => {
+      if (el.matches('.ltx_note_mark, .ltx_tag_note')) el.remove();
+      else el.removeAttribute('id');
+    });
+    while (clone.firstChild) content.appendChild(clone.firstChild);
+
+    marginNotePanel.append(label, content);
+  };
+
   document.querySelectorAll('.ltx_note').forEach(note => {
     const mark = note.querySelector('.ltx_note_mark');
     if (!mark) return;
     mark.setAttribute('tabindex', '0');
     mark.setAttribute('role', 'button');
+    mark.setAttribute('aria-label', `Show footnote ${mark.textContent.trim()}`);
+
+    // Hover/focus previews the note in the margin. We deliberately leave the
+    // latest note visible so the reader can move the pointer over and read it.
+    note.addEventListener('mouseenter', () => {
+      if (window.matchMedia('(min-width: 1181px)').matches) renderMarginNote(note);
+    });
+    mark.addEventListener('focus', () => {
+      if (window.matchMedia('(min-width: 1181px)').matches) renderMarginNote(note);
+    });
+
     const toggle = (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
       document.querySelectorAll('.ltx_note.is-open').forEach(n => {
         if (n !== note) n.classList.remove('is-open');
       });
-      note.classList.toggle('is-open');
+
+      if (window.matchMedia('(min-width: 1181px)').matches) {
+        note.classList.add('is-open');
+        renderMarginNote(note);
+      } else {
+        note.classList.toggle('is-open');
+      }
     };
+
     mark.addEventListener('click', toggle);
     mark.addEventListener('keydown', ev => {
       if (ev.key === 'Enter' || ev.key === ' ') toggle(ev);
