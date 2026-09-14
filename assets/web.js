@@ -37,18 +37,62 @@ document.addEventListener('DOMContentLoaded', () => {
         tag.textContent = `[${index + 1}]`;
 
         const directBlocks = [...item.children].filter(el => el.classList.contains('ltx_bibblock'));
-        const annotations = [...item.querySelectorAll('.web-ref-annotation')];
 
         if (directBlocks.length) {
           const main = document.createElement('div');
           main.className = 'web-ref-main';
+          const notes = document.createElement('div');
+          notes.className = 'web-ref-notes';
           let visiblePart = 0;
+          let annotationCount = 0;
 
           directBlocks.forEach(block => {
-            const clone = block.cloneNode(true);
-            clone.querySelectorAll('.web-ref-annotation').forEach(note => note.remove());
+            const markers = [...block.querySelectorAll('.web-ref-annotation')];
 
-            // Ignore the punctuation left behind by an annotation-only \newblock.
+            // LaTeXML's \lxWithClass annotates the first generated node. In this
+            // macro that means the class may land on the [a]/[b]/[c] marker only,
+            // while the italic quote is a following sibling. Treat any bibblock
+            // containing one of those markers as an annotation block, and rebuild
+            // each qitem from the DOM range between consecutive markers.
+            if (markers.length) {
+              markers.forEach((marker, markerIndex) => {
+                const nextMarker = markers[markerIndex + 1] || null;
+                const range = document.createRange();
+                range.setStartAfter(marker);
+                if (nextMarker) range.setEndBefore(nextMarker);
+                else range.setEnd(block, block.childNodes.length);
+
+                const row = document.createElement('div');
+                row.className = 'web-ref-annotation';
+
+                const label = document.createElement('span');
+                label.className = 'web-ref-annotation-label';
+                const rawLabel = marker.textContent.replace(/\s+/g, ' ').trim();
+                const labelMatch = rawLabel.match(/\[[^\]]+\]/);
+                label.textContent = labelMatch ? labelMatch[0] : rawLabel;
+
+                const quote = document.createElement('span');
+                quote.className = 'web-ref-annotation-text';
+                quote.appendChild(range.cloneContents());
+
+                // Remove whitespace/punctuation artifacts that belong to TeX's
+                // block separation, while preserving the quotation itself.
+                while (quote.firstChild && quote.firstChild.nodeType === Node.TEXT_NODE && !quote.firstChild.textContent.trim()) {
+                  quote.firstChild.remove();
+                }
+                const quoteText = quote.textContent.trim();
+                if (quoteText) {
+                  row.append(label, quote);
+                  notes.appendChild(row);
+                  annotationCount += 1;
+                }
+              });
+              return;
+            }
+
+            // Normal bibliography metadata: authors, title, journal/year. Keep
+            // these in one flowing citation rather than one line per \newblock.
+            const clone = block.cloneNode(true);
             const usefulText = clone.textContent.replace(/[\s.,;:]+/g, '');
             if (!usefulText) return;
 
@@ -64,20 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
             main.appendChild(document.createTextNode(' '));
           });
 
-          const notes = document.createElement('div');
-          notes.className = 'web-ref-notes';
-
-          annotations.forEach(note => {
-            const label = note.querySelector('.ltx_font_bold, strong, b');
-            const quote = note.querySelector('.ltx_font_italic, em, i');
-            if (label) label.classList.add('web-ref-annotation-label');
-            if (quote) quote.classList.add('web-ref-annotation-text');
-            notes.appendChild(note);
-          });
-
           directBlocks.forEach(block => block.remove());
           item.appendChild(main);
-          if (annotations.length) item.appendChild(notes);
+          if (annotationCount) item.appendChild(notes);
         }
       });
     }
@@ -131,6 +164,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         if (!container.id) container.id = `web-section-${i + 1}`;
 
+        let target = container;
+        // The numbered References section is only a heading wrapper in the
+        // converted DOM; the actual list lives in .ltx_bibliography. Point the
+        // sidebar directly at the bibliography so the jump is reliable.
+        if (heading === explicitReferenceHeading && bibliography) {
+          if (!bibliography.id) bibliography.id = 'web-references';
+          target = bibliography;
+        }
+
         let depth = 1;
         if (container.classList.contains('ltx_subsection')) depth = 2;
         if (container.classList.contains('ltx_subsubsection')) depth = 3;
@@ -140,13 +182,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const a = document.createElement('a');
         a.className = 'web-toc-link';
-        a.href = `#${container.id}`;
+        a.href = `#${target.id}`;
         a.textContent = heading.textContent.replace(/\s+/g, ' ').trim();
-        a.dataset.targetId = container.id;
+        a.dataset.targetId = target.id;
 
         li.appendChild(a);
         list.appendChild(li);
-        sectionLinks.push({ container, link: a });
+        sectionLinks.push({ container: target, link: a });
       });
 
       nav.appendChild(list);
@@ -179,6 +221,15 @@ document.addEventListener('DOMContentLoaded', () => {
       nav.addEventListener('click', ev => {
         const link = ev.target.closest('.web-toc-link');
         if (!link) return;
+
+        // Explicitly scroll instead of relying solely on fragment navigation.
+        // This also works when the URL already contains the same hash (e.g. #S6).
+        const target = document.getElementById(link.dataset.targetId);
+        if (target) {
+          ev.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', `#${target.id}`);
+        }
         if (window.matchMedia('(max-width: 1180px)').matches) setDrawer(false);
       });
 
