@@ -55,11 +55,11 @@
    centred instead of being pushed to the right by the Contents sidebar. */
 .web-layout {
   display: grid;
-  grid-template-columns: clamp(12rem, 15vw, 16.5rem) minmax(0, 70rem) clamp(12rem, 15vw, 16.5rem);
+  grid-template-columns: clamp(16rem, 20vw, 23rem) minmax(0, 70rem) clamp(16rem, 20vw, 23rem);
   justify-content: center;
-  gap: clamp(1.25rem, 2.2vw, 2.75rem);
+  gap: clamp(1rem, 1.7vw, 2.25rem);
   align-items: start;
-  width: min(112rem, 100%);
+  width: min(128rem, 100%);
   margin: 0 auto;
   padding: 0 1.25rem;
   box-sizing: border-box;
@@ -82,8 +82,9 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   box-sizing: border-box;
-  padding: .35rem 1.15rem 1.25rem .15rem;
+  padding: 0 1.25rem 1.25rem .15rem;
   border-right: 1px solid var(--web-rule);
+  background: #fff;
   scrollbar-width: thin;
   scrollbar-color: #c7c9cc transparent;
 }
@@ -95,11 +96,13 @@
   gap: .75rem;
   position: sticky;
   top: 0;
-  z-index: 2;
-  margin: 0 0 .6rem;
-  padding: .35rem 0 .7rem;
+  z-index: 20;
+  margin: 0 0 .55rem;
+  padding: .78rem 0 .7rem;
   background: #fff;
   border-bottom: 1px solid var(--web-rule);
+  box-shadow: 0 8px 10px -12px rgba(0,0,0,.35);
+  isolation: isolate;
 }
 
 .web-toc-title {
@@ -126,6 +129,64 @@
   padding: 0;
 }
 
+/* Main sections are always visible. Their descendants stay collapsed until
+   the section is opened explicitly or becomes the section currently read. */
+.web-toc-main-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1.75rem;
+  align-items: center;
+  gap: .1rem;
+}
+
+.web-toc-expander {
+  display: none;
+  width: 1.65rem;
+  height: 1.65rem;
+  margin-top: .48rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #85888d;
+  cursor: pointer;
+  font-size: .92rem;
+  line-height: 1;
+  transition: transform .15s ease, color .12s ease, background-color .12s ease;
+}
+
+.web-toc-item.depth-1.has-children > .web-toc-main-row > .web-toc-expander {
+  display: inline-flex;
+}
+
+.web-toc-expander::before { content: "›"; }
+.web-toc-item.depth-1.is-expanded > .web-toc-main-row > .web-toc-expander {
+  transform: rotate(90deg);
+  color: var(--web-accent);
+}
+.web-toc-expander:hover {
+  color: var(--web-accent);
+  background: #faf3f3;
+}
+
+.web-toc-children {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.web-toc-item.depth-1.is-expanded > .web-toc-children {
+  display: block;
+}
+
+/* Third-level headings are nested under their subsection but do not need an
+   additional disclosure step; opening the main section reveals the whole local
+   outline at once. */
+.web-toc-item.depth-2 > .web-toc-children {
+  display: block;
+}
+
 .web-toc-link {
   display: block;
   box-sizing: border-box;
@@ -137,7 +198,9 @@
   transition: color .12s ease, background-color .12s ease, box-shadow .12s ease;
 }
 
-.web-toc-item.depth-1 > .web-toc-link {
+.web-toc-item.depth-1 > .web-toc-link,
+.web-toc-item.depth-1 > .web-toc-main-row > .web-toc-link {
+  min-width: 0;
   margin-top: .48rem;
   padding: .34rem .45rem .34rem .55rem;
   color: #303236;
@@ -261,7 +324,7 @@ section[id], .ltx_bibliography[id] {
 
 /* On desktop the original LaTeXML popup is suppressed. Hover/focus/click on
    a footnote number sends the note into the stable right margin instead. */
-@media (min-width: 1181px) {
+@media (min-width: 1361px) {
   body.web-has-margin-notes .ltx_note .ltx_note_content,
   body.web-has-margin-notes .ltx_note:hover .ltx_note_content,
   body.web-has-margin-notes .ltx_note:focus-within .ltx_note_content,
@@ -336,7 +399,7 @@ section[id], .ltx_bibliography[id] {
   padding: 0 !important;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1360px) {
   .web-layout {
     display: block;
     width: 100%;

@@ -160,6 +160,34 @@ document.addEventListener('DOMContentLoaded', () => {
       list.className = 'web-toc-list';
 
       const sectionLinks = [];
+      const mainItems = [];
+      let currentMain = null;
+      let currentSubsection = null;
+
+      const makeChildrenList = (owner) => {
+        let children = owner.querySelector(':scope > .web-toc-children');
+        if (!children) {
+          children = document.createElement('ol');
+          children.className = 'web-toc-children';
+          owner.appendChild(children);
+        }
+        return children;
+      };
+
+      const setExpandedMain = (mainLi, expanded, exclusive = true) => {
+        if (!mainLi) return;
+        if (expanded && exclusive) {
+          mainItems.forEach(other => {
+            if (other === mainLi) return;
+            other.classList.remove('is-expanded');
+            const otherButton = other.querySelector(':scope > .web-toc-main-row > .web-toc-expander');
+            if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
+          });
+        }
+        mainLi.classList.toggle('is-expanded', expanded);
+        const button = mainLi.querySelector(':scope > .web-toc-main-row > .web-toc-expander');
+        if (button) button.setAttribute('aria-expanded', String(expanded));
+      };
 
       headings.forEach((heading, i) => {
         const container = heading.parentElement;
@@ -188,9 +216,56 @@ document.addEventListener('DOMContentLoaded', () => {
         a.textContent = heading.textContent.replace(/\s+/g, ' ').trim();
         a.dataset.targetId = target.id;
 
-        li.appendChild(a);
-        list.appendChild(li);
-        sectionLinks.push({ container: target, link: a });
+        let mainLi = currentMain;
+
+        if (depth === 1) {
+          const row = document.createElement('div');
+          row.className = 'web-toc-main-row';
+
+          const expander = document.createElement('button');
+          expander.type = 'button';
+          expander.className = 'web-toc-expander';
+          expander.setAttribute('aria-label', `Show subsections of ${a.textContent}`);
+          expander.setAttribute('aria-expanded', 'false');
+
+          row.append(a, expander);
+          li.appendChild(row);
+          list.appendChild(li);
+
+          currentMain = li;
+          currentSubsection = null;
+          mainLi = li;
+          mainItems.push(li);
+        } else if (depth === 2 && currentMain) {
+          currentMain.classList.add('has-children');
+          makeChildrenList(currentMain).appendChild(li);
+          li.appendChild(a);
+          currentSubsection = li;
+          mainLi = currentMain;
+        } else if (depth === 3 && currentMain) {
+          currentMain.classList.add('has-children');
+          const parent = currentSubsection || currentMain;
+          parent.classList.add('has-children');
+          makeChildrenList(parent).appendChild(li);
+          li.appendChild(a);
+          mainLi = currentMain;
+        } else {
+          // Defensive fallback for malformed hierarchy: keep the entry visible.
+          li.appendChild(a);
+          list.appendChild(li);
+        }
+
+        sectionLinks.push({ container: target, link: a, mainLi, depth });
+      });
+
+      mainItems.forEach(mainLi => {
+        const expander = mainLi.querySelector(':scope > .web-toc-main-row > .web-toc-expander');
+        if (!expander || !mainLi.classList.contains('has-children')) return;
+        expander.addEventListener('click', ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          setExpandedMain(mainLi, !mainLi.classList.contains('is-expanded'));
+        });
       });
 
       nav.appendChild(list);
@@ -245,12 +320,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Explicitly scroll instead of relying solely on fragment navigation.
         // This also works when the URL already contains the same hash (e.g. #S6).
         const target = document.getElementById(link.dataset.targetId);
+        const tocEntry = sectionLinks.find(item => item.link === link);
+        if (tocEntry?.mainLi) setExpandedMain(tocEntry.mainLi, true);
         if (target) {
           ev.preventDefault();
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           history.replaceState(null, '', `#${target.id}`);
         }
-        if (window.matchMedia('(max-width: 1180px)').matches) setDrawer(false);
+        if (window.matchMedia('(max-width: 1360px)').matches) setDrawer(false);
       });
 
       document.addEventListener('keydown', ev => {
@@ -263,9 +340,27 @@ document.addEventListener('DOMContentLoaded', () => {
         setDrawer(false);
       });
 
-      // Highlight the section currently being read. We use the nearest section
-      // whose top has passed the upper part of the viewport; this is steadier than
-      // rapidly toggling on short subsections.
+      // Highlight the section currently being read. Only the current main
+      // section is expanded, so the rail stays compact while still exposing the
+      // local outline around the reader's position.
+      let lastExpandedMain = null;
+      const keepLinkVisible = (link) => {
+        if (!link || !window.matchMedia('(min-width: 1361px)').matches) return;
+        const headerHeight = header.offsetHeight;
+        const navTop = nav.scrollTop;
+        const navBottom = navTop + nav.clientHeight;
+        const linkTop = link.offsetTop;
+        const linkBottom = linkTop + link.offsetHeight;
+        const safeTop = navTop + headerHeight + 10;
+        const safeBottom = navBottom - 18;
+
+        if (linkTop < safeTop) {
+          nav.scrollTo({ top: Math.max(0, linkTop - headerHeight - 14), behavior: 'smooth' });
+        } else if (linkBottom > safeBottom) {
+          nav.scrollTo({ top: linkBottom - nav.clientHeight + 20, behavior: 'smooth' });
+        }
+      };
+
       const updateActive = () => {
         const y = 110;
         let current = sectionLinks[0];
@@ -274,17 +369,17 @@ document.addEventListener('DOMContentLoaded', () => {
           if (rect.top <= y) current = item;
           else break;
         }
+
         sectionLinks.forEach(item => {
           item.link.classList.toggle('is-active', item === current);
         });
 
-        if (current && window.matchMedia('(min-width: 1181px)').matches) {
-          const navRect = nav.getBoundingClientRect();
-          const linkRect = current.link.getBoundingClientRect();
-          if (linkRect.top < navRect.top + 55 || linkRect.bottom > navRect.bottom - 20) {
-            current.link.scrollIntoView({ block: 'nearest' });
-          }
+        if (current?.mainLi && current.mainLi !== lastExpandedMain) {
+          setExpandedMain(current.mainLi, true);
+          lastExpandedMain = current.mainLi;
         }
+
+        if (current) keepLinkVisible(current.link);
       };
 
       let ticking = false;
@@ -341,10 +436,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hover/focus previews the note in the margin. We deliberately leave the
     // latest note visible so the reader can move the pointer over and read it.
     note.addEventListener('mouseenter', () => {
-      if (window.matchMedia('(min-width: 1181px)').matches) renderMarginNote(note);
+      if (window.matchMedia('(min-width: 1361px)').matches) renderMarginNote(note);
     });
     mark.addEventListener('focus', () => {
-      if (window.matchMedia('(min-width: 1181px)').matches) renderMarginNote(note);
+      if (window.matchMedia('(min-width: 1361px)').matches) renderMarginNote(note);
     });
 
     const toggle = (ev) => {
@@ -354,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (n !== note) n.classList.remove('is-open');
       });
 
-      if (window.matchMedia('(min-width: 1181px)').matches) {
+      if (window.matchMedia('(min-width: 1361px)').matches) {
         note.classList.add('is-open');
         renderMarginNote(note);
       } else {
