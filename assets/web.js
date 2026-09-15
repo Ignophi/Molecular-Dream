@@ -1,10 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Site-wide controls. Add the public preprint URL below once it exists;
-  // leaving it blank keeps the button hidden rather than linking somewhere wrong.
+  // Article-level metadata used by the right rail and citation dialog.
   const WEB_LINKS = [
-    { label: 'GitHub', href: 'https://github.com/Ignophi/Molecular-Dream' },
-    { label: 'Preprint', href: '' }
+    { label: 'Preprint', href: 'https://www.preprints.org/manuscript/202609.1165' },
+    { label: 'GitHub', href: 'https://github.com/Ignophi/Molecular-Dream' }
   ];
+
+  const RELATED_ARTICLES = [
+    {
+      title: 'House of Clocks: On the Misuse of Ageing Composite Measures',
+      date: '28 May 2025',
+      venue: 'bioRxiv',
+      href: 'https://www.biorxiv.org/content/10.1101/2025.05.24.655934v1'
+    }
+  ];
+
+  const CITATION = {
+    doi: '10.20944/preprints202609.1165.v1',
+    official: 'Hu, I. The Molecular Dream. Preprints 2026, 2026091165. https://doi.org/10.20944/preprints202609.1165.v1',
+    apa: 'Hu, I. (2026). The Molecular Dream. Preprints. https://doi.org/10.20944/preprints202609.1165.v1',
+    bibtex: `@article{Hu2026MolecularDream,
+  author  = {Hu, Ignophi},
+  title   = {The Molecular Dream},
+  journal = {Preprints},
+  year    = {2026},
+  number  = {2026091165},
+  doi     = {10.20944/preprints202609.1165.v1},
+  url     = {https://doi.org/10.20944/preprints202609.1165.v1}
+}`
+  };
+
+  // Optional privacy-friendly traffic statistics. Create a GoatCounter site and
+  // put only its short site code here (for example: 'molecular-dream'). Leave
+  // blank to disable analytics and hide the public Visits counter.
+  const GOATCOUNTER_CODE = '';
+
   const THEME_KEY = 'molecular-dream-theme';
   const themeButtons = [];
 
@@ -30,6 +59,154 @@ document.addEventListener('DOMContentLoaded', () => {
   try { savedTheme = localStorage.getItem(THEME_KEY) || 'light'; } catch (_) {}
   setTheme(savedTheme, false);
 
+  const copyText = async (text, button) => {
+    const original = button.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      button.textContent = 'Copied';
+    } catch (_) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+      button.textContent = 'Copied';
+    }
+    window.setTimeout(() => { button.textContent = original; }, 1200);
+  };
+
+  let citationModal = null;
+  const ensureCitationModal = () => {
+    if (citationModal) return citationModal;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'web-cite-overlay';
+    overlay.hidden = true;
+
+    const modal = document.createElement('section');
+    modal.className = 'web-cite-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'web-cite-title');
+
+    const head = document.createElement('div');
+    head.className = 'web-cite-head';
+    const heading = document.createElement('h2');
+    heading.id = 'web-cite-title';
+    heading.textContent = 'Cite this preprint';
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'web-cite-close';
+    close.setAttribute('aria-label', 'Close citation dialog');
+    close.textContent = '×';
+    head.append(heading, close);
+
+    const body = document.createElement('div');
+    body.className = 'web-cite-body';
+    const formats = [
+      ['Preprints / ACS', CITATION.official, false],
+      ['APA', CITATION.apa, false],
+      ['BibTeX', CITATION.bibtex, true]
+    ];
+    formats.forEach(([label, text, code]) => {
+      const card = document.createElement('div');
+      card.className = 'web-cite-card';
+      const row = document.createElement('div');
+      row.className = 'web-cite-card-head';
+      const name = document.createElement('strong');
+      name.textContent = label;
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.className = 'web-cite-copy';
+      copy.textContent = 'Copy';
+      copy.addEventListener('click', () => copyText(text, copy));
+      row.append(name, copy);
+      const value = document.createElement(code ? 'pre' : 'p');
+      value.className = code ? 'web-cite-value web-cite-code' : 'web-cite-value';
+      value.textContent = text;
+      card.append(row, value);
+      body.appendChild(card);
+    });
+
+    modal.append(head, body);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const hide = () => {
+      overlay.hidden = true;
+      document.body.classList.remove('web-modal-open');
+    };
+    const show = () => {
+      overlay.hidden = false;
+      document.body.classList.add('web-modal-open');
+      close.focus();
+    };
+    close.addEventListener('click', hide);
+    overlay.addEventListener('click', ev => { if (ev.target === overlay) hide(); });
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && !overlay.hidden) hide();
+    });
+
+    citationModal = { overlay, show, hide };
+    return citationModal;
+  };
+
+  const makeRelatedArticles = (extraClass = '') => {
+    const section = document.createElement('section');
+    section.className = `web-related ${extraClass}`.trim();
+
+    const heading = document.createElement('div');
+    heading.className = 'web-related-heading';
+    heading.textContent = 'Related Articles';
+    section.appendChild(heading);
+
+    RELATED_ARTICLES.forEach(article => {
+      const link = document.createElement('a');
+      link.className = 'web-related-item';
+      link.href = article.href;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+
+      const title = document.createElement('span');
+      title.className = 'web-related-title';
+      title.textContent = article.title;
+      const meta = document.createElement('span');
+      meta.className = 'web-related-meta';
+      meta.textContent = `${article.date} · ${article.venue}`;
+      link.append(title, meta);
+      section.appendChild(link);
+    });
+    return section;
+  };
+
+  const visitCountTargets = [];
+  const setupAnalytics = () => {
+    const code = GOATCOUNTER_CODE.trim();
+    if (!code) return;
+
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://gc.zgo.at/count.js';
+    script.dataset.goatcounter = `https://${code}.goatcounter.com/count`;
+    document.head.appendChild(script);
+
+    const updateCount = () => {
+      const path = location.pathname;
+      fetch(`https://${code}.goatcounter.com/counter/${encodeURIComponent(path)}.json`)
+        .then(response => response.ok ? response.json() : Promise.reject(response))
+        .then(data => {
+          visitCountTargets.forEach(el => { el.textContent = data.count || '—'; });
+        })
+        .catch(() => {
+          visitCountTargets.forEach(el => { el.textContent = '—'; });
+        });
+    };
+    script.addEventListener('load', () => window.setTimeout(updateCount, 700));
+  };
+
   const makeTools = (extraClass = '') => {
     const tools = document.createElement('div');
     tools.className = `web-right-tools ${extraClass}`.trim();
@@ -46,6 +223,13 @@ document.addEventListener('DOMContentLoaded', () => {
       links.appendChild(a);
     });
 
+    const cite = document.createElement('button');
+    cite.type = 'button';
+    cite.className = 'web-tool-link web-cite-button';
+    cite.textContent = 'Cite';
+    cite.addEventListener('click', () => ensureCitationModal().show());
+    links.appendChild(cite);
+
     const theme = document.createElement('button');
     theme.type = 'button';
     theme.className = 'web-theme-toggle';
@@ -56,6 +240,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (links.childElementCount) tools.appendChild(links);
     tools.appendChild(theme);
+
+    if (GOATCOUNTER_CODE.trim()) {
+      const visits = document.createElement('div');
+      visits.className = 'web-visit-stat';
+      const label = document.createElement('span');
+      label.textContent = 'Visits';
+      const value = document.createElement('strong');
+      value.textContent = '…';
+      visitCountTargets.push(value);
+      visits.append(label, value);
+      tools.appendChild(visits);
+    }
+
     updateThemeButtons();
     return tools;
   };
@@ -334,13 +531,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       nav.appendChild(list);
+      nav.appendChild(makeRelatedArticles('web-mobile-related'));
 
       // Put the navigation beside the article without rewriting the article itself.
       // The third, equal-width rail keeps the manuscript truly centred and is
       // used for stable desktop footnotes instead of floating popovers.
       const marginRail = document.createElement('aside');
       marginRail.className = 'web-margin-rail';
-      marginRail.setAttribute('aria-label', 'Footnotes');
+      marginRail.setAttribute('aria-label', 'Article tools, footnotes, and related articles');
 
       // Article-level utilities belong in the right rail: they stay visually
       // separate from the document outline and balance the page without
@@ -356,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
       marginNotePanel.setAttribute('aria-live', 'polite');
       marginNotePanel.textContent = 'Hover or click a footnote number to read the note here.';
 
-      marginRail.append(marginHeader, marginNotePanel);
+      marginRail.append(marginHeader, marginNotePanel, makeRelatedArticles('web-desktop-related'));
 
       const shell = document.createElement('div');
       shell.className = 'web-layout';
@@ -536,4 +734,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', () => {
     document.querySelectorAll('.ltx_note.is-open').forEach(n => n.classList.remove('is-open'));
   });
+
+  setupAnalytics();
 });

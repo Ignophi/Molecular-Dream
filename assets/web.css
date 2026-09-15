@@ -848,3 +848,237 @@ html[data-web-theme="dark"] .ltx_table {
     box-shadow: 12px 0 34px rgba(0,0,0,.38);
   }
 }
+
+/* ==============================================================
+   Article utilities v4: citation dialog, related work, visits
+   ============================================================== */
+
+/* Cite is a button but visually belongs beside the external resource pills. */
+.web-cite-button {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Related work lives low in the right rail so the top remains quiet and the
+   middle stays available for contextual footnotes. */
+.web-related {
+  box-sizing: border-box;
+  margin-top: 1.45rem;
+  padding-top: .8rem;
+  border-top: 1px solid var(--web-rule);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.web-related-heading {
+  margin: 0 0 .68rem;
+  color: var(--web-ink);
+  font-size: .72rem;
+  font-weight: 760;
+  letter-spacing: .09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.web-related-item {
+  display: block;
+  margin: 0 0 .78rem;
+  padding: 0 0 .78rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--web-rule) 72%, transparent);
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.web-related-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.web-related-title {
+  display: block;
+  color: var(--web-ink);
+  font-size: .79rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.web-related-meta {
+  display: block;
+  margin-top: .24rem;
+  color: var(--web-muted);
+  font-size: .69rem;
+  line-height: 1.3;
+}
+
+.web-related-item:hover .web-related-title {
+  color: var(--web-accent);
+}
+
+/* Optional public analytics counter. It appears only after GOATCOUNTER_CODE is
+   configured in web.js, so an unconfigured site gets no empty placeholder. */
+.web-visit-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-top: .62rem;
+  padding-top: .62rem;
+  border-top: 1px solid var(--web-rule);
+  color: var(--web-muted);
+  font-size: .7rem;
+  line-height: 1.2;
+}
+.web-visit-stat strong {
+  color: var(--web-ink);
+  font-weight: 720;
+}
+
+/* Citation dialog modelled after a compact preprint-server citation sheet. */
+body.web-modal-open { overflow: hidden; }
+
+.web-cite-overlay[hidden] { display: none !important; }
+.web-cite-overlay {
+  position: fixed;
+  z-index: 5000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 1.1rem;
+  background: rgba(0, 0, 0, .42);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.web-cite-modal {
+  width: min(46rem, 96vw);
+  max-height: min(44rem, 90vh);
+  overflow: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--web-rule);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--web-ink);
+  box-shadow: 0 18px 55px rgba(0,0,0,.24);
+}
+
+.web-cite-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem .85rem;
+  border-bottom: 1px solid var(--web-rule);
+  background: #fff;
+}
+
+.web-cite-head h2 {
+  margin: 0;
+  color: var(--web-ink) !important;
+  font: 720 1rem/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+.web-cite-close {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--web-ink);
+  cursor: pointer;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.web-cite-close:hover { background: var(--web-soft); }
+
+.web-cite-body {
+  display: grid;
+  gap: .8rem;
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.web-cite-card {
+  box-sizing: border-box;
+  padding: .78rem .85rem;
+  border: 1px solid var(--web-rule);
+  border-radius: 7px;
+  background: var(--web-soft);
+}
+
+.web-cite-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-bottom: .55rem;
+  color: var(--web-ink);
+  font-size: .76rem;
+}
+
+.web-cite-copy {
+  border: 1px solid #cdd0d4;
+  border-radius: 5px;
+  padding: .32rem .62rem;
+  background: #fff;
+  color: #45484d;
+  cursor: pointer;
+  font: 650 .7rem/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.web-cite-copy:hover { color: var(--web-accent); }
+
+.web-cite-value {
+  margin: 0 !important;
+  color: #55595f !important;
+  font: 400 .79rem/1.48 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.web-cite-code {
+  padding: .7rem;
+  border-radius: 5px;
+  background: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: .72rem !important;
+}
+
+/* Related articles in the off-canvas drawer are useful on phones, but should
+   be visually separated from the article outline. */
+.web-mobile-related { display: none; }
+
+@media (max-width: 1360px) {
+  .web-desktop-related { display: none !important; }
+  .web-mobile-related {
+    display: block;
+    margin: 1.15rem 0 .3rem;
+    padding-top: .9rem;
+  }
+}
+
+/* Dark-mode treatment for the new UI. */
+html[data-web-theme="dark"] .web-cite-modal,
+html[data-web-theme="dark"] .web-cite-head {
+  background: #1f2225;
+  border-color: var(--web-rule);
+}
+html[data-web-theme="dark"] .web-cite-card {
+  background: #25282c;
+  border-color: var(--web-rule);
+}
+html[data-web-theme="dark"] .web-cite-value { color: #c8cacf !important; }
+html[data-web-theme="dark"] .web-cite-code,
+html[data-web-theme="dark"] .web-cite-copy {
+  background: #1a1c1f;
+  border-color: #4a4e53;
+  color: #d6d8dc;
+}
+html[data-web-theme="dark"] .web-cite-close { color: #f0f1f2; }
+
+@media (max-width: 620px) {
+  .web-cite-overlay { padding: .55rem; }
+  .web-cite-modal { width: 100%; max-height: 94vh; }
+  .web-cite-head { padding: .85rem .9rem .72rem; }
+  .web-cite-body { padding: .8rem .9rem .95rem; }
+  .web-cite-value { font-size: .75rem !important; }
+}
