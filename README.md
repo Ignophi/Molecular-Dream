@@ -11,8 +11,6 @@ Molecular measures are increasingly proposed as surrogate endpoints for evaluati
 
 Intervention effects need not occur on the timescale of the deterioration they counteract. Even when effects are small or gradual, surrogate endpoints are only one of several ways to improve detectability. Study design can do so without changing the endpoint. Even if surrogates are preferred, their validity requires that the candidate molecular measure respond to the intervention, causally influence the primary outcome under that intervention, and fully mediate the intervention’s effect on that outcome. For outcomes that are weakly constrained by selection, late-life, failure-defined, or aggregate, a small and manageable molecular surrogate set is unlikely, and one that generalizes across interventions still less so.
 
-### Read the paper
-
 | Version | Link |
 | --- | --- |
 | 🌐 Interactive web edition | **[ignophi.github.io/Molecular-Dream](https://ignophi.github.io/Molecular-Dream/)** |
