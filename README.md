@@ -1,5 +1,3 @@
----
-
 A companion repository for ***The Molecular Dream***, a preprint examining molecular surrogate endpoints in gerontology, the assumptions behind their use, and alternative ways to improve detectability through study design.
 
 [![Read online](https://img.shields.io/badge/Read-online-8B0000?style=for-the-badge)](https://ignophi.github.io/Molecular-Dream/)
@@ -60,8 +58,6 @@ https://doi.org/10.20944/preprints202609.1165.v1
 ```
 
 </details>
-
----
 
 <p align="center">
   <a href="https://ignophi.github.io/Molecular-Dream/">Web edition</a>
