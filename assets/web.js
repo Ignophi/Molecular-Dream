@@ -1,4 +1,65 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Site-wide controls. Add the public preprint URL below once it exists;
+  // leaving it blank keeps the button hidden rather than linking somewhere wrong.
+  const WEB_LINKS = [
+    { label: 'GitHub', href: 'https://github.com/Ignophi/Molecular-Dream' },
+    { label: 'Preprint', href: '' }
+  ];
+  const THEME_KEY = 'molecular-dream-theme';
+  const themeButtons = [];
+
+  const currentTheme = () => document.documentElement.dataset.webTheme || 'light';
+  const updateThemeButtons = () => {
+    const dark = currentTheme() === 'dark';
+    themeButtons.forEach(button => {
+      button.textContent = dark ? '☀ Light' : '◐ Dark';
+      button.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      button.setAttribute('aria-pressed', String(dark));
+    });
+  };
+  const setTheme = (theme, persist = true) => {
+    const normalized = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.webTheme = normalized;
+    document.documentElement.style.colorScheme = normalized;
+    if (persist) {
+      try { localStorage.setItem(THEME_KEY, normalized); } catch (_) {}
+    }
+    updateThemeButtons();
+  };
+  let savedTheme = 'light';
+  try { savedTheme = localStorage.getItem(THEME_KEY) || 'light'; } catch (_) {}
+  setTheme(savedTheme, false);
+
+  const makeTools = (extraClass = '') => {
+    const tools = document.createElement('div');
+    tools.className = `web-right-tools ${extraClass}`.trim();
+
+    const links = document.createElement('div');
+    links.className = 'web-resource-links';
+    WEB_LINKS.filter(item => item.href).forEach(item => {
+      const a = document.createElement('a');
+      a.className = 'web-tool-link';
+      a.href = item.href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.textContent = `${item.label} ↗`;
+      links.appendChild(a);
+    });
+
+    const theme = document.createElement('button');
+    theme.type = 'button';
+    theme.className = 'web-theme-toggle';
+    theme.addEventListener('click', () => {
+      setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    });
+    themeButtons.push(theme);
+
+    if (links.childElementCount) tools.appendChild(links);
+    tools.appendChild(theme);
+    updateThemeButtons();
+    return tools;
+  };
+
   const paper = document.querySelector('article.ltx_document, .ltx_document');
   const placeholder = document.querySelector('.web-toc-placeholder');
   let marginNotePanel = null;
@@ -156,6 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
       header.append(title, close);
       nav.appendChild(header);
 
+      // On tablet/mobile the desktop right rail disappears, so expose the same
+      // article links and theme control inside the Contents drawer.
+      nav.appendChild(makeTools('web-mobile-tools'));
+
       const list = document.createElement('ol');
       list.className = 'web-toc-list';
 
@@ -276,6 +341,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const marginRail = document.createElement('aside');
       marginRail.className = 'web-margin-rail';
       marginRail.setAttribute('aria-label', 'Footnotes');
+
+      // Article-level utilities belong in the right rail: they stay visually
+      // separate from the document outline and balance the page without
+      // competing with the manuscript title.
+      marginRail.appendChild(makeTools('web-desktop-tools'));
 
       const marginHeader = document.createElement('div');
       marginHeader.className = 'web-margin-header';

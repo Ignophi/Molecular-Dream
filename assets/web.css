@@ -639,3 +639,212 @@ section[id], .ltx_bibliography[id] {
     font-size: .74rem !important;
   }
 }
+
+/* ==============================================================
+   Desktop polish: tighter top spacing, article tools, dark theme
+   ============================================================== */
+
+/* The ar5iv base theme leaves generous print-like breathing room above the
+   article. Keep that on phones/tablets, but halve it on the wide 3-column
+   desktop layout. */
+@media (min-width: 1361px) {
+  .web-layout {
+    margin-top: -2.1rem !important;
+  }
+}
+
+/* Article-level controls live above Footnotes in the right rail. */
+.web-right-tools {
+  box-sizing: border-box;
+  margin: 0 0 1rem;
+  padding: .15rem 0 .95rem;
+  border-bottom: 1px solid var(--web-rule);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.web-resource-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin: 0 0 .55rem;
+}
+
+.web-tool-link,
+.web-theme-toggle {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.95rem;
+  border: 1px solid #d7d9dc;
+  border-radius: 999px;
+  background: #fff;
+  color: #44474c !important;
+  font-family: inherit;
+  font-size: .73rem;
+  font-weight: 650;
+  line-height: 1;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: border-color .12s ease, background-color .12s ease, color .12s ease;
+}
+
+.web-tool-link { padding: .42rem .65rem; }
+.web-theme-toggle { padding: .42rem .68rem; }
+
+.web-tool-link:hover,
+.web-theme-toggle:hover {
+  border-color: #b7b9bd;
+  background: #f7f7f7;
+  color: var(--web-accent) !important;
+}
+
+.web-mobile-tools { display: none; }
+
+/* ------------------------------
+   Dark mode
+   ------------------------------ */
+html[data-web-theme="dark"] {
+  color-scheme: dark;
+  --web-accent: #e16b6b;
+  --web-ink: #f0f1f2;
+  --web-muted: #b4b7bb;
+  --web-rule: #3a3d41;
+  --web-soft: #222528;
+}
+
+html[data-web-theme="dark"],
+html[data-web-theme="dark"] body {
+  background: #17191b !important;
+  color: #dedfe1 !important;
+}
+
+html[data-web-theme="dark"] .ltx_document,
+html[data-web-theme="dark"] .ltx_page_main,
+html[data-web-theme="dark"] .ltx_page_content,
+html[data-web-theme="dark"] .ltx_page_columns,
+html[data-web-theme="dark"] .ltx_page_column,
+html[data-web-theme="dark"] .ltx_columns,
+html[data-web-theme="dark"] .ltx_column {
+  background: transparent !important;
+  color: #dedfe1 !important;
+}
+
+html[data-web-theme="dark"] .ltx_document p,
+html[data-web-theme="dark"] .ltx_document li,
+html[data-web-theme="dark"] .ltx_document dd,
+html[data-web-theme="dark"] .ltx_document dt,
+html[data-web-theme="dark"] .ltx_document figcaption,
+html[data-web-theme="dark"] .ltx_document .ltx_caption,
+html[data-web-theme="dark"] math {
+  color: inherit !important;
+}
+
+html[data-web-theme="dark"] .ltx_title,
+html[data-web-theme="dark"] .ltx_title_section,
+html[data-web-theme="dark"] .ltx_title_subsection,
+html[data-web-theme="dark"] .ltx_title_subsubsection {
+  color: #f0f1f2 !important;
+}
+
+html[data-web-theme="dark"] a:not(.web-tool-link):not(.web-toc-link) {
+  color: #9fc6ee;
+}
+
+html[data-web-theme="dark"] .web-abstract {
+  background: #202326 !important;
+  border-color: #555a60 !important;
+  color: #e5e6e7 !important;
+}
+
+html[data-web-theme="dark"] .web-toc-sidebar,
+html[data-web-theme="dark"] .web-toc-header,
+html[data-web-theme="dark"] .web-margin-header {
+  background: #17191b !important;
+}
+
+html[data-web-theme="dark"] .web-toc-item.depth-1 > .web-toc-link,
+html[data-web-theme="dark"] .web-toc-item.depth-1 > .web-toc-main-row > .web-toc-link {
+  color: #e0e1e3;
+}
+
+html[data-web-theme="dark"] .web-toc-link:hover,
+html[data-web-theme="dark"] .web-toc-expander:hover {
+  background: #242024;
+  color: var(--web-accent) !important;
+}
+
+html[data-web-theme="dark"] .web-toc-link.is-active {
+  background: #2a2021;
+  color: #f08a8a !important;
+}
+
+html[data-web-theme="dark"] .web-tool-link,
+html[data-web-theme="dark"] .web-theme-toggle,
+html[data-web-theme="dark"] .web-toc-toggle,
+html[data-web-theme="dark"] .web-toc-close {
+  border-color: #494d52;
+  background: #232629;
+  color: #e0e1e3 !important;
+}
+
+html[data-web-theme="dark"] .web-tool-link:hover,
+html[data-web-theme="dark"] .web-theme-toggle:hover {
+  border-color: #666b72;
+  background: #292d30;
+  color: #f08a8a !important;
+}
+
+html[data-web-theme="dark"] .web-margin-note-content,
+html[data-web-theme="dark"] .web-ref-annotation-text,
+html[data-web-theme="dark"] .web-ref-annotation {
+  color: #bfc1c4 !important;
+}
+
+html[data-web-theme="dark"] .web-margin-note-label {
+  background: #302223;
+  color: #f08a8a;
+}
+
+html[data-web-theme="dark"] .ltx_note_content {
+  background: #222528 !important;
+  border-color: #555a60 !important;
+  color: #e0e1e3 !important;
+  box-shadow: 0 8px 26px rgba(0,0,0,.45) !important;
+}
+
+html[data-web-theme="dark"] .ltx_bibliography .web-ref-main,
+html[data-web-theme="dark"] .ltx_bibliography .web-ref-title,
+html[data-web-theme="dark"] .ltx_bibliography .web-ref-details,
+html[data-web-theme="dark"] .ltx_bibliography .web-ref-authors {
+  color: #dedfe1 !important;
+}
+
+html[data-web-theme="dark"] .ltx_bibliography .web-ref-annotation-label {
+  color: #dedfe1 !important;
+}
+
+html[data-web-theme="dark"] .ltx_bibliography .web-ref-annotation {
+  border-left-color: #484c51 !important;
+}
+
+html[data-web-theme="dark"] table,
+html[data-web-theme="dark"] .ltx_tabular,
+html[data-web-theme="dark"] .ltx_table {
+  color: #dedfe1 !important;
+}
+
+@media (max-width: 1360px) {
+  .web-mobile-tools {
+    display: block;
+    margin: .25rem 0 .65rem;
+    padding: .2rem 0 .8rem;
+  }
+  .web-desktop-tools { display: none !important; }
+
+  html[data-web-theme="dark"] .web-toc-sidebar {
+    background: #17191b !important;
+    border-right-color: #3a3d41;
+    box-shadow: 12px 0 34px rgba(0,0,0,.38);
+  }
+}
