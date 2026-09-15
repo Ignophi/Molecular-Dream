@@ -1082,3 +1082,23 @@ html[data-web-theme="dark"] .web-cite-close { color: #f0f1f2; }
   .web-cite-body { padding: .8rem .9rem .95rem; }
   .web-cite-value { font-size: .75rem !important; }
 }
+
+/* ==============================================================
+   v5: PDF / ORCID controls and linked author byline
+   ============================================================== */
+
+/* Keep the author byline visually identical to the paper until hovered. */
+.web-author-orcid,
+.web-author-orcid:visited {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: 1px dotted transparent;
+  transition: color .12s ease, border-color .12s ease;
+}
+
+.web-author-orcid:hover,
+.web-author-orcid:focus-visible {
+  color: var(--web-accent) !important;
+  border-bottom-color: currentColor;
+  outline: none;
+}

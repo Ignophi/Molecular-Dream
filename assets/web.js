@@ -1,8 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Article-level metadata used by the right rail and citation dialog.
+  const ORCID_URL = 'https://orcid.org/0009-0002-4094-0868';
+
   const WEB_LINKS = [
     { label: 'Preprint', href: 'https://www.preprints.org/manuscript/202609.1165' },
-    { label: 'GitHub', href: 'https://github.com/Ignophi/Molecular-Dream' }
+    {
+      label: 'PDF',
+      href: 'https://github.com/Ignophi/Molecular-Dream/raw/refs/heads/main/molecular_dream.pdf',
+      suffix: '↓',
+      download: 'molecular_dream.pdf'
+    },
+    { label: 'GitHub', href: 'https://github.com/Ignophi/Molecular-Dream' },
+    { label: 'ORCID', href: ORCID_URL }
   ];
 
   const RELATED_ARTICLES = [
@@ -31,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Optional privacy-friendly traffic statistics. Create a GoatCounter site and
   // put only its short site code here (for example: 'molecular-dream'). Leave
-  // blank to disable analytics and hide the public Visits counter.
-  const GOATCOUNTER_CODE = 'molecular-dream';
+  // blank to disable analytics and hide the public Views counter.
+  const GOATCOUNTER_CODE = '';
 
   const THEME_KEY = 'molecular-dream-theme';
   const themeButtons = [];
@@ -217,9 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const a = document.createElement('a');
       a.className = 'web-tool-link';
       a.href = item.href;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.textContent = `${item.label} ↗`;
+      if (item.download) {
+        a.download = item.download;
+        a.target = '_self';
+      } else {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      a.textContent = `${item.label} ${item.suffix || '↗'}`;
       links.appendChild(a);
     });
 
@@ -245,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const visits = document.createElement('div');
       visits.className = 'web-visit-stat';
       const label = document.createElement('span');
-      label.textContent = 'Visits';
+      label.textContent = 'Views';
       const value = document.createElement('strong');
       value.textContent = '…';
       visitCountTargets.push(value);
@@ -258,6 +272,33 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const paper = document.querySelector('article.ltx_document, .ltx_document');
+
+  // Make the author byline itself an ORCID link as well as providing the
+  // dedicated ORCID button in the right-hand utility rail. Restrict the
+  // search to the first exact author-name match outside the bibliography so
+  // citations to the author's own work are never altered.
+  if (paper) {
+    const authorCandidates = [...paper.querySelectorAll(
+      '.ltx_authors .ltx_personname, .ltx_authors .ltx_creator, .ltx_personname, .author, span, div'
+    )];
+    const authorName = authorCandidates.find(el =>
+      !el.closest('.ltx_bibliography') &&
+      el.textContent.replace(/\s+/g, ' ').trim() === 'Ignophi Hu'
+    );
+
+    if (authorName && !authorName.querySelector(':scope > a.web-author-orcid')) {
+      const link = document.createElement('a');
+      link.className = 'web-author-orcid';
+      link.href = ORCID_URL;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.title = 'Ignophi Hu on ORCID';
+      link.setAttribute('aria-label', 'Ignophi Hu — ORCID profile');
+      while (authorName.firstChild) link.appendChild(authorName.firstChild);
+      authorName.appendChild(link);
+      authorName.classList.add('web-author-linked');
+    }
+  }
   const placeholder = document.querySelector('.web-toc-placeholder');
   let marginNotePanel = null;
   let marginNoteLabel = null;
