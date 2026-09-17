@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Optional privacy-friendly traffic statistics. Create a GoatCounter site and
   // put only its short site code here (for example: 'molecular-dream'). Leave
   // blank to disable analytics and hide the public Views counter.
-  const GOATCOUNTER_CODE = '';
+  const GOATCOUNTER_CODE = 'molecular-dream';
 
   const THEME_KEY = 'molecular-dream-theme';
   const themeButtons = [];
